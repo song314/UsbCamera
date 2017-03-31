@@ -29,7 +29,7 @@
         <activity
             android:name="com.quinn.activity.MainActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="sensorPortrait">
+            android:screenOrientation="reversePortrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -29,9 +30,11 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.asha.vrlib.MDVRLibrary;
 import com.dreamguard.api.CameraType;
 import com.dreamguard.api.USBCamera;
 import com.dreamguard.widget.UVCCameraTextureView;
+import com.google.android.apps.muzei.render.GLTextureView;
 import com.google.gson.Gson;
 import com.orhanobut.logger.Logger;
 import com.quinn.model.Format;
@@ -50,7 +53,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private static final String USB_STATE_RECEIVER = "android.hardware.usb.action.USB_STATE";
 
     private Toolbar toolbar;
-    private UVCCameraTextureView mCameraView;
+    private GLTextureView mCameraView;
     private AppCompatSeekBar brightness, cBrightness, cContrast, cSaturation, cHue, pFocus, pWhiteBlance, pSharpness, pZoom;
     private AppCompatImageButton switchPhotoVideo, photo, video, autoFocus, autoWhiteBlance, colors, params;
     private RelativeLayout cameraParent, tip;
@@ -87,7 +90,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         toolbar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
 
-        mCameraView = (UVCCameraTextureView) findViewById(R.id.uvc_camera);
+        mCameraView = (GLTextureView) findViewById(R.id.uvc_camera);
 
         switchPhotoVideo = (AppCompatImageButton) findViewById(R.id.switchPhotoVideo);
         photo = (AppCompatImageButton) findViewById(R.id.photo);
@@ -118,9 +121,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         camera.setCameraType(CameraType.C3D_SBS);
     }
 
-    private void openCamera() {
-        tip.setVisibility(View.GONE);
-        mCameraView.setAspectRatio(PREVIEW_WIDTH / (float) PREVIEW_HEIGHT);
+    private void openCamera(final Surface surface) {
+//        tip.setVisibility(View.GONE);
+//        mCameraView.setAspectRatio(PREVIEW_WIDTH / (float) PREVIEW_HEIGHT);
 
         mHandler.postDelayed(new Runnable() {
             @Override
@@ -130,7 +133,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     if (ret) {
 //                        tip.setVisibility(View.GONE);
                         camera.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                        camera.setPreviewTexture(mCameraView.getSurfaceTexture());
+                        camera.setPreviewTexture(surface);
                         camera.startPreview();
 
                         mHandler.postDelayed(new Runnable() {
@@ -152,10 +155,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }, 100);
     }
 
+    private MDVRLibrary mVRLibrary;
+    private void initVRLibrary(){
+        // new instance
+        mVRLibrary = MDVRLibrary.with(this)
+                .displayMode(MDVRLibrary.DISPLAY_MODE_NORMAL)
+                .interactiveMode(MDVRLibrary.INTERACTIVE_MODE_MOTION)
+                .asVideo(new MDVRLibrary.IOnSurfaceReadyCallback() {
+                    @Override
+                    public void onSurfaceReady(Surface surface) {
+                        openCamera(surface);
+                    }
+                })
+                .build(R.id.uvc_camera);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        openCamera();
+        initVRLibrary();
         mWakeLock.acquire();
     }
 
@@ -163,6 +181,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     protected void onPause() {
         super.onPause();
         mWakeLock.release();
+        camera.close();
     }
 
     private void getCameraParams() {
@@ -190,6 +209,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     protected void onDestroy() {
         super.onDestroy();
         camera.destroy();
+        mVRLibrary.onDestroy();
         if (mHandler != null) {
             mHandler = null;
         }
@@ -216,7 +236,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     @Override
                     public void call(Boolean aBoolean) {
                         if (aBoolean) {
-                            camera.captureStill(mCameraView);
+//                            camera.captureStill(mCameraView);
                         } else {
                             Toast.makeText(MainActivity.this, "无法获得权限,请到设置中开启权限!", Toast.LENGTH_SHORT).show();
                         }
@@ -341,7 +361,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     PREVIEW_WIDTH = Integer.parseInt(size.substring(0, size.indexOf("x")));
                     PREVIEW_HEIGHT = Integer.parseInt(size.substring(size.indexOf("x") + 1));
                     camera.close();
-                    openCamera();
+//                    openCamera();
                     dialogInterface.dismiss();
                 }
             });

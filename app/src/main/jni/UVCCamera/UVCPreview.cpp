@@ -159,7 +159,7 @@ void UVCPreview::clear_pool() {
 inline const bool UVCPreview::isRunning() const {return mIsRunning; }
 
 int UVCPreview::setPreviewSize(int width, int height, int mode, float bandwidth) {
-    lg.LGInit(width, height);
+    lg.LGInit(width, height,4,40,width,height);
     ENTER();
 
     int result = 0;
@@ -410,11 +410,10 @@ void UVCPreview::uvc_preview_frame_callback(uvc_frame_t *frame, void *vptr_args)
         }
         uvc_error_t ret = uvc_duplicate_frame(frame, copy);
         if (UNLIKELY(ret)) {
-            //preview->recycle_frame(copy);
+            preview->recycle_frame(copy);
             return;
         }
         preview->addPreviewFrame(copy);
-        uvc_free_frame(copy);
     }
 }
 
@@ -427,11 +426,10 @@ void UVCPreview::addPreviewFrame(uvc_frame_t *frame) {
     uvc_frame_t *converted = get_frame(frame->width * frame->height * 4); //for RGBX
     ret = uvc_any2rgbx(yuyv_frame, converted); //YUYV-->RGBX
     uvc_free_frame(yuyv_frame);
-    //uvc_free_frame(frame);
+    uvc_free_frame(frame);
     if(!ret)
     {
         do_merge(converted);   //merge images, NOW image is RGBX
-        //usleep(33000);
         pthread_mutex_lock(&preview_mutex);
         if (isRunning() && (previewFrames.size() < MAX_FRAME)) {
             previewFrames.put(converted);
@@ -548,8 +546,6 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
                     } else {
                         recycle_frame(frame_RGBX);
                     }
-                } else{
-                    uvc_free_frame(frame_RGBX);
                 }
             }
         } else {
@@ -728,6 +724,7 @@ uvc_frame_t *UVCPreview::waitCaptureFrame() {
     return frame;
 }
 
+
 /**
  * clear drame data for capturing
  */
@@ -793,7 +790,6 @@ void UVCPreview::do_capture_idle_loop(JNIEnv *env) {
     for (; isRunning() && isCapturing() ;) {
         do_capture_callback(env, waitCaptureFrame());
     }
-
     EXIT();
 }
 
@@ -851,7 +847,8 @@ void UVCPreview::do_capture_callback(JNIEnv *env, uvc_frame_t *frame) {
                 if (LIKELY(YUYV_frame)) {
                     RGBX2YUYV(frame, YUYV_frame); //RGBX-->YUYV
                     int b = mFrameCallbackFunc(YUYV_frame, IYUV_frame); //YUYV-->IYUV420SP
-
+                    //uvc_free_frame(YUYV_frame);
+                    //uvc_free_frame(frame);
 
                     if (b) {
                         LOGW("failed to convert for callback frame");
@@ -872,46 +869,44 @@ void UVCPreview::do_capture_callback(JNIEnv *env, uvc_frame_t *frame) {
         SKIP:
         uvc_free_frame(YUYV_frame);
         uvc_free_frame(IYUV_frame);
-        //uvc_free_frame(frame);
     }
     EXIT();
 }
 
 void UVCPreview::do_merge(uvc_frame_t *converted)
 {
+   // clock_t start,finish;
+  //  start=clock();
     uchar *data_ptr = (uchar *)converted->data;
-    uchar *in_data = (uchar *)malloc(converted->width * converted->height * 3 * sizeof(uchar));
-    for(int i = 0; i < converted->height; i ++)
+    uchar *in_data = (uchar *)malloc(converted->width * converted->height * 4 * sizeof(uchar));
+//    for(int i = 0; i < converted->height; i ++)
+//    {
+//        for(int j = 0; j < converted->width; j ++)
+//        {
+//            in_data[i*converted->width*4+j*4]   =  data_ptr[i*converted->width*4+j*4];
+//            in_data[i*converted->width*4+j*4+1] =  data_ptr[i*converted->width*4+j*4+1];
+//            in_data[i*converted->width*4+j*4+2] =  data_ptr[i*converted->width*4+j*4+2];
+//            in_data[i*converted->width*4+j*4+3] =  data_ptr[i*converted->width*4+j*4+3];
+//        }
+//    }
+     memcpy(in_data,data_ptr,converted->width*converted->height*4*sizeof(uchar));
+
+    lg.Panointerface((void *)in_data,converted->width,converted->height,4, 0);
+
+    memset(data_ptr,0,converted->width*4*converted->height*sizeof(uchar));
+    for(int i = 300; i < lg.imgdst.height; i ++)
     {
-        for(int j = 0; j < converted->width; j ++)
+        for(int j = 0; j < lg.imgdst.width; j ++)
         {
-            in_data[i*converted->width*3+j*3] =  data_ptr[i*converted->width*4+j*4];
-            in_data[i*converted->width*3+j*3+1] =  data_ptr[i*converted->width*4+j*4+1];
-            in_data[i*converted->width*3+j*3+2] =  data_ptr[i*converted->width*4+j*4+2];
+            data_ptr[i*converted->width*4+j*4]   = lg.imgdst.data[i*lg.imgdst.widthStep+j*4];
+            data_ptr[i*converted->width*4+j*4+1] = lg.imgdst.data[i*lg.imgdst.widthStep+j*4+1];
+            data_ptr[i*converted->width*4+j*4+2] = lg.imgdst.data[i*lg.imgdst.widthStep+j*4+2];
+            data_ptr[i*converted->width*4+j*4+3] = lg.imgdst.data[i*lg.imgdst.widthStep+j*4+3];
         }
     }
-    Frame new_frame;
-    new_frame.width = converted->width;
-    new_frame.height = converted->height;
-    new_frame.channel = 3;
-    new_frame.widthStep = converted->width*3;
-
-
-
-    new_frame.data = ( unsigned char* ) malloc( converted->width*converted->height*3*sizeof( unsigned char ) );
-    memset( new_frame.data, 0, converted->width*converted->height*3*sizeof( unsigned char )  );
-
-    lg.Panointerface((void *)in_data,converted->width,converted->height,3, &new_frame, 0);
-
-    for(int i = 0; i < new_frame.height; i ++)
-    {
-        for(int j = 0; j < new_frame.width; j ++)
-        {
-            data_ptr[i*converted->width*4+j*4]   = new_frame.data[i*converted->width*3+j*3];
-            data_ptr[i*converted->width*4+j*4+1] = new_frame.data[i*converted->width*3+j*3+1];
-            data_ptr[i*converted->width*4+j*4+2] = new_frame.data[i*converted->width*3+j*3+2];
-        }
-    }
+  //  finish=clock();
+   // LOGW("time is  %d\n",(finish-start)/(CLOCKS_PER_SEC/1000));
+     // int rowstart=370;
+    // memcpy(data_ptr+rowstart*converted->width*4,lg.imgdst.data+rowstart*lg.imgdst.widthStep,(lg.imgdst.height-rowstart)*lg.imgdst.widthStep);
     free(in_data);
-    lg.DeleteFrame(new_frame);
 }

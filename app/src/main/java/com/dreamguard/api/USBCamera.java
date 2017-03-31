@@ -18,7 +18,6 @@ import com.dreamguard.usb.detect.DeviceFilter;
 import com.dreamguard.usb.detect.USBMonitor;
 import com.dreamguard.usb.detect.USBStatus;
 import com.dreamguard.widget.UVCCameraTextureView;
-import com.quinn.usbcameratest.BuildConfig;
 import com.quinn.usbcameratest.R;
 
 import java.io.BufferedOutputStream;
@@ -48,7 +47,7 @@ public class USBCamera implements IUSBCameraParamsControll {
 
     private RelativeLayout tip;
 
-    private SurfaceTexture mSurfaceTexture;
+    private Surface mSurfaceTexture;
 
     private USBStatus usbStatus = USBStatus.DETACHED;
 
@@ -113,7 +112,7 @@ public class USBCamera implements IUSBCameraParamsControll {
         }
     }
 
-    public void setPreviewTexture(SurfaceTexture surfaceTexture) {
+    public void setPreviewTexture(Surface surfaceTexture) {
         mSurfaceTexture = surfaceTexture;
     }
 
@@ -196,7 +195,7 @@ public class USBCamera implements IUSBCameraParamsControll {
         @Override
         public void onAttach(final UsbDevice device) {
             Log.v(TAG, "onAttach:");
-            tip.setVisibility(View.GONE);
+//            tip.setVisibility(View.GONE);
             usbStatus = USBStatus.ATTACHED;
         }
 
@@ -205,7 +204,7 @@ public class USBCamera implements IUSBCameraParamsControll {
             Log.v(TAG, "onConnect:");
             usbStatus = USBStatus.CONNECTED;
             mHandler.openCamera(ctrlBlock);
-            mHandler.startPreview(new Surface(mSurfaceTexture));
+            mHandler.startPreview(mSurfaceTexture);
         }
 
         @Override
@@ -220,7 +219,7 @@ public class USBCamera implements IUSBCameraParamsControll {
         @Override
         public void onDetach(final UsbDevice device) {
             Log.v(TAG, "onDetach:");
-            tip.setVisibility(View.VISIBLE);
+//            tip.setVisibility(View.VISIBLE);
             usbStatus = USBStatus.DETACHED;
         }
 

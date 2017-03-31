@@ -31,6 +31,7 @@ import android.view.TextureView;
 
 import com.dreamguard.api.CameraViewInterface;
 import com.dreamguard.renderer.RenderHandler;
+import com.google.android.apps.muzei.render.GLTextureView;
 import com.quinn.usbcameratest.BuildConfig;
 
 import java.util.HashMap;
@@ -42,7 +43,7 @@ import java.util.HashMap;
  * you can show this view in the center of screen and keep the aspect ratio of content
  * XXX it is better that can set the aspect raton a a xml property
  */
-public class UVCCameraTextureView extends TextureView	// API >= 14
+public class UVCCameraTextureView extends GLTextureView    // API >= 14
 	implements TextureView.SurfaceTextureListener, CameraViewInterface {
 
 	private static final boolean DEBUG = true;	// TODO set false on release
@@ -53,17 +54,14 @@ public class UVCCameraTextureView extends TextureView	// API >= 14
     private RenderHandler mRenderHandler;
 
 	public UVCCameraTextureView(final Context context) {
-		this(context, null, 0);
+		this(context, null);
 	}
 
 	public UVCCameraTextureView(final Context context, final AttributeSet attrs) {
-		this(context, attrs, 0);
-	}
-
-	public UVCCameraTextureView(final Context context, final AttributeSet attrs, final int defStyle) {
-		super(context, attrs, defStyle);
+		super(context, attrs);
 		setSurfaceTextureListener(this);
 	}
+
 
 	@Override
     public void setAspectRatio(final double aspectRatio) {
