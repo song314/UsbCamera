@@ -7,4 +7,5 @@ import com.zhy.autolayout.AutoLayoutActivity;
  */
 
 public class BaseActivity extends AutoLayoutActivity {
+    protected static final String DIR_NAME = "720vv_O2";
 }

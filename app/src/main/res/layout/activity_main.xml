@@ -24,7 +24,7 @@
             android:layout_above="@+id/controllPanel"
             android:layout_below="@+id/toolBar">
 
-            <com.google.android.apps.muzei.render.GLTextureView
+            <com.dreamguard.widget.UVCCameraTextureView
                 android:id="@+id/uvc_camera"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -150,15 +150,24 @@
                 android:layout_marginRight="30px"
                 android:background="@color/transparent"
                 app:srcCompat="@drawable/ic_video_switch" />
+
+            <com.quinn.widget.RoundImageView
+                android:id="@+id/libraryPhotoVideo"
+                android:layout_width="140px"
+                android:layout_height="140px"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="30px"
+                app:srcCompat="@drawable/placeholder" />
         </RelativeLayout>
     </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/tip"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg">
+        android:background="@drawable/bg"
+        android:visibility="gone">
 
         <android.support.v7.widget.AppCompatTextView
             android:layout_width="match_parent"

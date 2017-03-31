@@ -47,7 +47,7 @@ public class USBCamera implements IUSBCameraParamsControll {
 
     private RelativeLayout tip;
 
-    private Surface mSurfaceTexture;
+    private SurfaceTexture mSurfaceTexture;
 
     private USBStatus usbStatus = USBStatus.DETACHED;
 
@@ -112,7 +112,7 @@ public class USBCamera implements IUSBCameraParamsControll {
         }
     }
 
-    public void setPreviewTexture(Surface surfaceTexture) {
+    public void setPreviewTexture(SurfaceTexture surfaceTexture) {
         mSurfaceTexture = surfaceTexture;
     }
 
@@ -195,7 +195,7 @@ public class USBCamera implements IUSBCameraParamsControll {
         @Override
         public void onAttach(final UsbDevice device) {
             Log.v(TAG, "onAttach:");
-//            tip.setVisibility(View.GONE);
+            tip.setVisibility(View.GONE);
             usbStatus = USBStatus.ATTACHED;
         }
 
@@ -204,7 +204,7 @@ public class USBCamera implements IUSBCameraParamsControll {
             Log.v(TAG, "onConnect:");
             usbStatus = USBStatus.CONNECTED;
             mHandler.openCamera(ctrlBlock);
-            mHandler.startPreview(mSurfaceTexture);
+            mHandler.startPreview(new Surface(mSurfaceTexture));
         }
 
         @Override
@@ -219,7 +219,7 @@ public class USBCamera implements IUSBCameraParamsControll {
         @Override
         public void onDetach(final UsbDevice device) {
             Log.v(TAG, "onDetach:");
-//            tip.setVisibility(View.VISIBLE);
+            tip.setVisibility(View.VISIBLE);
             usbStatus = USBStatus.DETACHED;
         }
 

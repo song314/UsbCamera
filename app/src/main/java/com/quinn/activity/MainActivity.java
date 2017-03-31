@@ -1,14 +1,10 @@
 package com.quinn.activity;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -18,11 +14,9 @@ import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Surface;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -30,39 +24,37 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import com.asha.vrlib.MDVRLibrary;
 import com.dreamguard.api.CameraType;
 import com.dreamguard.api.USBCamera;
 import com.dreamguard.widget.UVCCameraTextureView;
-import com.google.android.apps.muzei.render.GLTextureView;
 import com.google.gson.Gson;
 import com.orhanobut.logger.Logger;
 import com.quinn.model.Format;
 import com.quinn.usbcameratest.R;
+import com.quinn.widget.RoundImageView;
 import com.tbruyelle.rxpermissions.RxPermissions;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.List;
 
 import rx.functions.Action1;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
-    private static final String USB_STATE_RECEIVER = "android.hardware.usb.action.USB_STATE";
-
     private Toolbar toolbar;
-    private GLTextureView mCameraView;
+    private UVCCameraTextureView mCameraView;
     private AppCompatSeekBar brightness, cBrightness, cContrast, cSaturation, cHue, pFocus, pWhiteBlance, pSharpness, pZoom;
     private AppCompatImageButton switchPhotoVideo, photo, video, autoFocus, autoWhiteBlance, colors, params;
     private RelativeLayout cameraParent, tip;
+    private RoundImageView mediaLibrary;
     private USBCamera camera;
     String resolution[];
 
     //["1472x736","2176x1088","3008x1504"]    1280,720    640,480
-    private static int PREVIEW_WIDTH = 1472;
-    private static int PREVIEW_HEIGHT =736;
+//    private static int PREVIEW_WIDTH = 1472;
+//    private static int PREVIEW_HEIGHT =736;
+    private static int PREVIEW_WIDTH = 2176;
+    private static int PREVIEW_HEIGHT =1088;
 //    private static int PREVIEW_WIDTH = 1280;
 //    private static int PREVIEW_HEIGHT = 720;
 
@@ -90,7 +82,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         toolbar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
 
-        mCameraView = (GLTextureView) findViewById(R.id.uvc_camera);
+        mCameraView = (UVCCameraTextureView) findViewById(R.id.uvc_camera);
 
         switchPhotoVideo = (AppCompatImageButton) findViewById(R.id.switchPhotoVideo);
         photo = (AppCompatImageButton) findViewById(R.id.photo);
@@ -104,6 +96,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         cameraParent = (RelativeLayout) findViewById(R.id.cameraParent);
         tip = (RelativeLayout) findViewById(R.id.tip);
 
+        mediaLibrary = (RoundImageView) findViewById(R.id.libraryPhotoVideo);
+
         photo.setOnClickListener(this);
         switchPhotoVideo.setOnClickListener(this);
         video.setOnClickListener(this);
@@ -111,6 +105,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         autoWhiteBlance.setOnClickListener(this);
         colors.setOnClickListener(this);
         params.setOnClickListener(this);
+        mediaLibrary.setOnClickListener(this);
 
         brightness.setOnSeekBarChangeListener(this);
     }
@@ -121,9 +116,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         camera.setCameraType(CameraType.C3D_SBS);
     }
 
-    private void openCamera(final Surface surface) {
-//        tip.setVisibility(View.GONE);
-//        mCameraView.setAspectRatio(PREVIEW_WIDTH / (float) PREVIEW_HEIGHT);
+    private void openCamera() {
+        tip.setVisibility(View.GONE);
+        mCameraView.setAspectRatio(PREVIEW_WIDTH / (float) PREVIEW_HEIGHT);
 
         mHandler.postDelayed(new Runnable() {
             @Override
@@ -133,7 +128,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     if (ret) {
 //                        tip.setVisibility(View.GONE);
                         camera.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                        camera.setPreviewTexture(surface);
+                        camera.setPreviewTexture(mCameraView.getSurfaceTexture());
                         camera.startPreview();
 
                         mHandler.postDelayed(new Runnable() {
@@ -155,25 +150,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }, 100);
     }
 
-    private MDVRLibrary mVRLibrary;
-    private void initVRLibrary(){
-        // new instance
-        mVRLibrary = MDVRLibrary.with(this)
-                .displayMode(MDVRLibrary.DISPLAY_MODE_NORMAL)
-                .interactiveMode(MDVRLibrary.INTERACTIVE_MODE_MOTION)
-                .asVideo(new MDVRLibrary.IOnSurfaceReadyCallback() {
-                    @Override
-                    public void onSurfaceReady(Surface surface) {
-                        openCamera(surface);
-                    }
-                })
-                .build(R.id.uvc_camera);
-    }
+//    private MDVRLibrary mVRLibrary;
+//    private void initVRLibrary(){
+//        // new instance
+//        mVRLibrary = MDVRLibrary.with(this)
+//                .displayMode(MDVRLibrary.DISPLAY_MODE_NORMAL)
+//                .interactiveMode(MDVRLibrary.INTERACTIVE_MODE_CARDBORAD_MOTION_WITH_TOUCH)
+//                .asVideo(new MDVRLibrary.IOnSurfaceReadyCallback() {
+//                    @Override
+//                    public void onSurfaceReady(Surface surface) {
+//                        openCamera(surface);
+//                    }
+//                })
+//                .build(R.id.uvc_camera);
+//    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        initVRLibrary();
+        openCamera();
         mWakeLock.acquire();
     }
 
@@ -209,7 +204,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     protected void onDestroy() {
         super.onDestroy();
         camera.destroy();
-        mVRLibrary.onDestroy();
+//        mVRLibrary.onDestroy();
         if (mHandler != null) {
             mHandler = null;
         }
@@ -236,7 +231,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     @Override
                     public void call(Boolean aBoolean) {
                         if (aBoolean) {
-//                            camera.captureStill(mCameraView);
+                            camera.captureStill(mCameraView);
                         } else {
                             Toast.makeText(MainActivity.this, "无法获得权限,请到设置中开启权限!", Toast.LENGTH_SHORT).show();
                         }
@@ -262,6 +257,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     }
                 });
                 break;
+            case R.id.libraryPhotoVideo:
+                if (isPhotoVideo) {
+                    File movis = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),DIR_NAME);
+                    Logger.d(movis.toString());
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.addCategory(Intent.CATEGORY_DEFAULT);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setDataAndType(Uri.fromFile(movis), "video/*");//设置类型，我这里是任意类型，任意后缀的可以这样写。
+                    startActivity(intent);
+                }else{
+                    File dcim = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),DIR_NAME);
+                    Logger.d(dcim.toString());
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.addCategory(Intent.CATEGORY_DEFAULT);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setDataAndType(Uri.fromFile(dcim), "image/*");//设置类型，我这里是任意类型，任意后缀的可以这样写。
+                    startActivity(intent);
+                }
+                break;
 //            case R.id.autoFocus:
 //                if (!camera.isCameraOpened()) return;
 //                if (camera.getAutoFocus()) {
@@ -285,10 +299,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 break;
             case R.id.params:
                 showParamsDialog();
-//                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-//                intent.setDataAndType(Uri.fromFile(new File("/sdcard/Movis/")),"*/*");//设置类型，我这里是任意类型，任意后缀的可以这样写。
-//                intent.addCategory(Intent.CATEGORY_OPENABLE);
-//                startActivityForResult(intent,1);
                 break;
         }
     }
@@ -361,7 +371,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     PREVIEW_WIDTH = Integer.parseInt(size.substring(0, size.indexOf("x")));
                     PREVIEW_HEIGHT = Integer.parseInt(size.substring(size.indexOf("x") + 1));
                     camera.close();
-//                    openCamera();
+                    openCamera();
                     dialogInterface.dismiss();
                 }
             });
