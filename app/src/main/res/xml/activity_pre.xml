@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="推流设置">
+
+        <EditTextPreference
+            android:defaultValue="rtmp://"
+            android:key="key_pushurl"
+            android:dialogTitle="请输入要设置的推流地址"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="设置推流地址"
+            android:title="推流地址" />
+    </PreferenceCategory>
+</PreferenceScreen>

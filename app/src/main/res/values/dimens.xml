@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="dialog_margin">30px</dimen>
+    <dimen name="dialog_padding">20px</dimen>
+    <dimen name="dialog_textsize">66px</dimen>
+</resources>

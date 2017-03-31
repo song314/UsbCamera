@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/cameraParent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg"
+        android:clipToPadding="true"
+        android:fitsSystemWindows="true">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleTextColor="@color/white" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/controllPanel"
+            android:layout_below="@+id/toolBar">
+
+            <com.dreamguard.widget.UVCCameraTextureView
+                android:id="@+id/uvc_camera"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/toolBar"
+            android:background="@color/bg"
+            android:paddingBottom="20px"
+            android:paddingLeft="20px"
+            android:paddingRight="220px"
+            android:paddingTop="20px"
+            android:visibility="gone">
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/autoFocus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/transparent"
+                app:srcCompat="@drawable/ic_focus_normal" />
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/autoWhiteBlance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/transparent"
+                app:srcCompat="@drawable/ic_whiteblance_normal" />
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/colors"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/transparent"
+                app:srcCompat="@drawable/ic_color" />
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/params"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/transparent"
+                app:srcCompat="@drawable/ic_params" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/controllPanel"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/toolBar"
+            android:layout_marginRight="20px"
+            android:layout_marginTop="100px"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingBottom="40px"
+            android:paddingTop="40px"
+            android:visibility="gone">
+
+            <android.support.v7.widget.AppCompatImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_brightness_up" />
+
+            <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginBottom="30px"
+                android:layout_marginTop="30px"
+                android:layout_weight="1">
+
+                <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar
+                    android:id="@+id/seekBarBrightness"
+                    style="@style/ProgressBar_Mini"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:splitTrack="false"
+                    app:seekBarRotation="CW270" /> <!-- Rotation: CW90 or CW270 -->
+            </com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper>
+
+            <android.support.v7.widget.AppCompatImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_brightness_down" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/controllPanel"
+            android:layout_width="match_parent"
+            android:layout_height="300px"
+            android:layout_alignParentBottom="true"
+            android:background="@color/bg">
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/photo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@color/transparent"
+                android:src="@drawable/controll_photo" />
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@color/transparent"
+                android:src="@drawable/controll_video"
+                android:visibility="gone" />
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/switchPhotoVideo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="30px"
+                android:background="@color/transparent"
+                app:srcCompat="@drawable/ic_video_switch" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/tip"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg">
+
+        <android.support.v7.widget.AppCompatTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="500px"
+            android:gravity="center"
+            android:text="请插入相机"
+            android:textColor="@color/white"
+            android:textSize="80px"
+            android:textStyle="bold" />
+
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="200px"
+            app:srcCompat="@drawable/o2" />
+    </RelativeLayout>
+</RelativeLayout>
